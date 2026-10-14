@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}ExpenseVault - Smart Full-Stack Expense Tracker & AI Insights{% endblock %}
+{% block page_title %}Welcome to ExpenseVault{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 2rem auto; text-align: center;">
+    <div style="display:inline-block; padding: 0.35rem 1rem; border-radius: var(--radius-full); background: var(--primary-light); color: var(--primary); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 1.5rem;">
+        🚀 ENTERPRISE-GRADE FINANCIAL INTELLIGENCE
+    </div>
+
+    <h2 style="font-size: 3rem; font-weight: 800; line-height: 1.15; margin-bottom: 1.25rem; letter-spacing: -0.03em;">
+        Master Your Cash Flow with <br>
+        <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Intelligent Expense Tracking</span>
+    </h2>
+
+    <p style="font-size: 1.15rem; color: var(--text-secondary); max-width: 720px; margin: 0 auto 2.5rem; line-height: 1.6;">
+        A high-performance full-stack web application designed for comprehensive income and expense management, budget tracking, real-time interactive analytics, and AI-powered spending optimization.
+    </p>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 4rem;">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+            Create Free Account &rarr;
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+            Sign In with Demo
+        </a>
+    </div>
+
+    <!-- Feature Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left;">
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📊</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Live Analytics & Trends</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Dynamic Chart.js visualizations covering category breakdowns, monthly cash flow ratios, and custom date range filters.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🎯</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Category-Wise Budgets</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Set monthly spending limits with multi-tier warning thresholds (80% warning and 100% hard limit alerts).
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">✨</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">AI Financial Advisor</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Built-in statistical intelligence that scans for abnormal spending spikes, top category leaks, and the 50/30/20 rule.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🔒</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Security & SQL Relational DB</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Multi-user data isolation, password hashing, parameterized SQL queries, and clean RESTful API endpoints.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📤</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">CSV Data Portability</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Export all historical transaction data to CSV instantly for spreadsheet analysis or accounting reports.
+            </p>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📱</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Fully Responsive UI</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Polished mobile-first layout with smooth micro-interactions, dark/light theme switching, and accessible design.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

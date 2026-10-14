@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & AI Insights - ExpenseVault{% endblock %}
+{% block page_title %}Analytics & Financial Intelligence{% endblock %}
+
+{% block content %}
+<!-- AI Financial Intelligence Hero Panel -->
+<div class="card" style="border: 1px solid rgba(99, 102, 241, 0.4); background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%); margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <span style="font-size:1.6rem;">🤖</span>
+                <h3 style="font-size: 1.35rem; font-weight: 800;">Autonomous Financial Intelligence</h3>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+                Continuous statistical pattern recognition, anomaly detection, and cash-flow optimization engine.
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Financial Health Score</div>
+            <div id="aiHealthScore" style="font-size: 2rem; font-weight: 900; color: var(--success);">--/100</div>
+        </div>
+    </div>
+
+    <!-- AI Findings Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <!-- Executive Summary -->
+        <div style="background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+                <span>📋</span> Executive Cash Flow Summary
+            </div>
+            <p id="aiMonthlySummary" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                Computing cash flow ratios...
+            </p>
+            <div id="aiTopCategoryBadge" style="margin-top: 0.75rem;"></div>
+        </div>
+
+        <!-- Personalized Saving Advice -->
+        <div style="background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+                <span>💡</span> Actionable Cost-Saving Strategies
+            </div>
+            <ul id="aiSavingTipsList" style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                <li>Analyzing spending leaks...</li>
+            </ul>
+        </div>
+
+        <!-- 50/30/20 Budget Optimization -->
+        <div style="background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+                <span>📐</span> 50/30/20 Benchmark Recommendations
+            </div>
+            <ul id="aiBudgetRecList" style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                <li>Calculating recommended allocations...</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Unusual Spending Anomalies Alert Banner -->
+    <div id="aiAnomaliesContainer" style="margin-top: 1.5rem;">
+        <!-- Populated dynamically if anomalies are detected -->
+    </div>
+</div>
+
+<!-- Interactive Analytics Charts Grid -->
+<div class="charts-grid" style="margin-bottom: 2rem;">
+    <!-- Cash Flow Bar Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>📊</span> Monthly Inflow vs Outflow</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="analyticsTrendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Category Doughnut Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>🥧</span> Category Spending Distribution</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="analyticsCategoryChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+async function loadAnalyticsPageData() {
+    try {
+        // Load stats for charts
+        const stats = await apiRequest('/api/dashboard/stats');
+        
+        if (stats.monthly_trend) {
+            createCashFlowBarChart('analyticsTrendChart', stats.monthly_trend);
+        }
+
+        if (stats.category_breakdown) {
+            createCategoryDoughnutChart(
+                'analyticsCategoryChart',
+                stats.category_breakdown.labels,
+                stats.category_breakdown.values,
+                stats.category_breakdown.colors
+            );
+        }
+
+        // Load AI Insights
+        const aiRes = await apiRequest('/api/ai-insights');
+        if (aiRes.success && aiRes.data) {
+            const ai = aiRes.data;
+
+            document.getElementById('aiHealthScore').textContent = `${ai.financial_health_score}/100`;
+            document.getElementById('aiMonthlySummary').textContent = ai.monthly_summary;
+
+            // Top category badge
+            const topBadge = document.getElementById('aiTopCategoryBadge');
+            if (ai.highest_spending_category) {
+                topBadge.innerHTML = `
+                    <span class="badge badge-warning">
+                        Top Expense: ${ai.highest_spending_category.name} (${formatCurrency(ai.highest_spending_category.amount)} - ${ai.highest_spending_category.percentage}%)
+                    </span>
+                `;
+            }
+
+            // Saving suggestions
+            const tipsList = document.getElementById('aiSavingTipsList');
+            if (ai.saving_suggestions && ai.saving_suggestions.length > 0) {
+                tipsList.innerHTML = ai.saving_suggestions.map(tip => `<li style="margin-bottom:0.4rem;">${tip}</li>`).join('');
+            } else {
+                tipsList.innerHTML = `<li>Continue logging regular transactions to receive personalized tips.</li>`;
+            }
+
+            // Budget recommendations
+            const recList = document.getElementById('aiBudgetRecList');
+            if (ai.budget_recommendations && ai.budget_recommendations.length > 0) {
+                recList.innerHTML = ai.budget_recommendations.map(r => `<li style="margin-bottom:0.4rem;">${r}</li>`).join('');
+            } else {
+                recList.innerHTML = `<li>Allocations will appear once recurring income is tracked.</li>`;
+            }
+
+            // Anomalies
+            const anomContainer = document.getElementById('aiAnomaliesContainer');
+            if (ai.unusual_spending && ai.unusual_spending.length > 0) {
+                anomContainer.innerHTML = `
+                    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 1rem 1.25rem;">
+                        <div style="font-weight:700; color:var(--danger); display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                            <span>⚠️</span> Unusual Spending Spikes Detected
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            ${ai.unusual_spending.map(item => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; flex-wrap:wrap; gap:0.5rem;">
+                                    <span><strong>${item.description}</strong> (${item.category}) - ${formatDate(item.date)}</span>
+                                    <span style="font-weight:700; color:var(--danger);">${formatCurrency(item.amount)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                anomContainer.innerHTML = `
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: var(--success); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem;">
+                        <span>✓</span> No unusual spending anomalies detected. Spending velocity is consistent with baseline norms.
+                    </div>
+                `;
+            }
+        }
+
+    } catch (err) {
+        console.error('Analytics load error:', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadAnalyticsPageData);
+</script>
+{% endblock %}

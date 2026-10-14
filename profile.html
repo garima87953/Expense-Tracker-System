@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile & Settings - ExpenseVault{% endblock %}
+{% block page_title %}Account Settings{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem;">
+    <!-- Profile Overview Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>👤</span> Personal Information</h3>
+        </div>
+
+        <form id="profileForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="profileUsername">Username</label>
+                    <input type="text" class="form-control" id="profileUsername" value="{{ user.username }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="profileEmail">Email Address</label>
+                    <input type="email" class="form-control" id="profileEmail" value="{{ user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+                    <small style="color:var(--text-muted);font-size:0.8rem;">Email address cannot be changed.</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="profileCurrency">Display Currency</label>
+                <select class="form-control" id="profileCurrency">
+                    <option value="USD" {% if user.currency == 'USD' %}selected{% endif %}>USD ($) - US Dollar</option>
+                    <option value="EUR" {% if user.currency == 'EUR' %}selected{% endif %}>EUR (€) - Euro</option>
+                    <option value="GBP" {% if user.currency == 'GBP' %}selected{% endif %}>GBP (£) - British Pound</option>
+                    <option value="INR" {% if user.currency == 'INR' %}selected{% endif %}>INR (₹) - Indian Rupee</option>
+                    <option value="CAD" {% if user.currency == 'CAD' %}selected{% endif %}>CAD ($) - Canadian Dollar</option>
+                    <option value="AUD" {% if user.currency == 'AUD' %}selected{% endif %}>AUD ($) - Australian Dollar</option>
+                    <option value="JPY" {% if user.currency == 'JPY' %}selected{% endif %}>JPY (¥) - Japanese Yen</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+
+    <!-- Security & Password Change Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>🔒</span> Security & Password</h3>
+        </div>
+
+        <form id="passwordForm">
+            <div class="form-group">
+                <label class="form-label" for="currentPassword">Current Password *</label>
+                <input type="password" class="form-control" id="currentPassword" required placeholder="••••••••">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">New Password *</label>
+                    <input type="password" class="form-control" id="newPassword" required minlength="6" placeholder="Min. 6 characters">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirmNewPassword">Confirm New Password *</label>
+                    <input type="password" class="form-control" id="confirmNewPassword" required minlength="6" placeholder="Re-enter new password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-outline">Change Password</button>
+        </form>
+    </div>
+
+    <!-- Account Details Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>ℹ️</span> Account Status</h3>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.8;">
+            <div>Member Since: <strong>{{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'Active' }}</strong></div>
+            <div>Database Status: <strong>Encrypted & Isolated</strong></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update Profile Form
+document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('profileUsername').value.trim();
+    const currency = document.getElementById('profileCurrency').value;
+
+    try {
+        await apiRequest('/api/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ username, currency })
+        });
+        showToast('Profile updated successfully!', 'success');
+        setTimeout(() => window.location.reload(), 600);
+    } catch (err) {
+        // Handled
+    }
+});
+
+// Change Password Form
+document.getElementById('passwordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    if (newPassword !== confirmNewPassword) {
+        showToast('New passwords do not match.', 'danger');
+        return;
+    }
+
+    try {
+        await apiRequest('/api/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+        });
+        showToast('Password changed successfully!', 'success');
+        document.getElementById('passwordForm').reset();
+    } catch (err) {
+        // Handled
+    }
+});
+</script>
+{% endblock %}

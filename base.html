@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Modern Full-Stack Expense Tracker & Financial Intelligence Platform">
+    <title>{% block title %}ExpenseTracker - Smart Financial Management{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Design System Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        window.APP_CURRENCY = "{{ user_currency }}";
+        window.APP_CURRENCY_SYMBOL = "{{ currency_symbol }}";
+    </script>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        {% if current_user_id %}
+        <div class="modal-backdrop" id="sidebarOverlay" style="z-index: 95;"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-title">ExpenseVault</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard.view_dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard.view_dashboard' %}active{% endif %}">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('expenses.view_expenses') }}" class="nav-link {% if request.endpoint == 'expenses.view_expenses' %}active{% endif %}">
+                    <span>💳</span> Expenses
+                </a>
+                <a href="{{ url_for('income.view_income') }}" class="nav-link {% if request.endpoint == 'income.view_income' %}active{% endif %}">
+                    <span>💰</span> Income
+                </a>
+                <a href="{{ url_for('budgets.view_budgets') }}" class="nav-link {% if request.endpoint == 'budgets.view_budgets' %}active{% endif %}">
+                    <span>🎯</span> Budgets
+                </a>
+                <a href="{{ url_for('goals.view_goals') }}" class="nav-link {% if request.endpoint == 'goals.view_goals' %}active{% endif %}">
+                    <span>🐷</span> Savings Jars
+                </a>
+                <a href="{{ url_for('dashboard.view_analytics') }}" class="nav-link {% if request.endpoint == 'dashboard.view_analytics' %}active{% endif %}">
+                    <span>📈</span> Analytics & AI
+                </a>
+                <a href="{{ url_for('auth.profile_page') }}" class="nav-link {% if request.endpoint == 'auth.profile_page' %}active{% endif %}">
+                    <span>⚙️</span> Settings & Profile
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-badge">
+                    <div class="user-avatar">{{ current_username[:1].upper() if current_username else 'U' }}</div>
+                    <div class="user-info">
+                        <span class="user-name">{{ current_username }}</span>
+                        <span class="user-currency-tag">{{ user_currency }} ({{ currency_symbol }})</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" title="Logout" style="color:var(--text-muted);font-size:1.2rem;transition:color 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
+                    🚪
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <div class="main-content" style="{% if not current_user_id %}margin-left:0;{% endif %}">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    {% if current_user_id %}
+                    <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Toggle Sidebar">☰</button>
+                    {% else %}
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <div class="brand-icon">⚡</div>
+                        <span class="brand-title">ExpenseVault</span>
+                    </div>
+                    {% endif %}
+                    <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Theme Toggle -->
+                    <button class="btn-icon" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Dark/Light Mode">
+                        <span id="themeIcon">☀️</span>
+                    </button>
+
+                    {% if current_user_id %}
+                    <button class="btn btn-primary btn-sm" onclick="openModal('quickExpenseModal')">
+                        + Expense
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="openModal('quickIncomeModal')">
+                        + Income
+                    </button>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Sign In</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Get Started</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Page Container -->
+            <main class="page-container">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div style="margin-bottom: 1.5rem;">
+                      {% for category, message in messages %}
+                        <div class="card" style="border-left: 4px solid {% if category == 'danger' %}var(--danger){% elif category == 'success' %}var(--success){% else %}var(--primary){% endif %}; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                          <span>{{ message }}</span>
+                          <button style="background:none;border:none;color:inherit;cursor:pointer;font-size:1.2rem;" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Global Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    {% if current_user_id %}
+    <!-- GLOBAL QUICK ADD EXPENSE MODAL -->
+    <div class="modal-backdrop" id="quickExpenseModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Log New Expense</h3>
+                <button class="modal-close" onclick="closeModal('quickExpenseModal')">&times;</button>
+            </div>
+            <form id="quickExpenseForm">
+                <div class="form-group">
+                    <label class="form-label" for="quickExpAmount">Amount ({{ currency_symbol }}) *</label>
+                    <input type="number" step="0.01" min="0.01" class="form-control" id="quickExpAmount" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="quickExpCategory">Category *</label>
+                    <select class="form-control" id="quickExpCategory" required>
+                        <option value="1">Food & Dining</option>
+                        <option value="2">Shopping</option>
+                        <option value="3">Transportation</option>
+                        <option value="4">Rent & Housing</option>
+                        <option value="5">Bills & Utilities</option>
+                        <option value="6">Entertainment</option>
+                        <option value="7">Healthcare</option>
+                        <option value="8">Education</option>
+                        <option value="9">Travel</option>
+                        <option value="10">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="quickExpDesc">Description</label>
+                    <input type="text" class="form-control" id="quickExpDesc" placeholder="e.g. Grocery store, dinner, coffee">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="quickExpDate">Date</label>
+                        <input type="date" class="form-control" id="quickExpDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quickExpPayment">Payment Method</label>
+                        <select class="form-control" id="quickExpPayment">
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Digital Wallet">Digital Wallet (Apple Pay / GPay)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('quickExpenseModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GLOBAL QUICK ADD INCOME MODAL -->
+    <div class="modal-backdrop" id="quickIncomeModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Income</h3>
+                <button class="modal-close" onclick="closeModal('quickIncomeModal')">&times;</button>
+            </div>
+            <form id="quickIncomeForm">
+                <div class="form-group">
+                    <label class="form-label" for="quickIncAmount">Amount ({{ currency_symbol }}) *</label>
+                    <input type="number" step="0.01" min="0.01" class="form-control" id="quickIncAmount" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="quickIncSource">Source Name *</label>
+                    <input type="text" class="form-control" id="quickIncSource" required placeholder="e.g. Monthly Salary, Freelance project">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="quickIncCategory">Category</label>
+                        <select class="form-control" id="quickIncCategory">
+                            <option value="11">Salary</option>
+                            <option value="12">Freelance</option>
+                            <option value="13">Investments</option>
+                            <option value="14">Gifts & Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quickIncDate">Date</label>
+                        <input type="date" class="form-control" id="quickIncDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="quickIncDesc">Description</label>
+                    <input type="text" class="form-control" id="quickIncDesc" placeholder="Optional notes">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('quickIncomeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Income</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

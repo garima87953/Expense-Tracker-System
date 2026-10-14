@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - ExpenseVault{% endblock %}
+{% block page_title %}Sign In{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 3rem auto;">
+    <div class="card" style="padding: 2.25rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="brand-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">⚡</div>
+            <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">Welcome Back</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Sign in to your financial control dashboard</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="login">Username or Email</label>
+                <input type="text" class="form-control" id="login" name="login" value="{{ login_identifier or '' }}" required placeholder="demo@example.com" autofocus>
+            </div>
+
+            <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.45rem;">
+                    <label class="form-label" for="password" style="margin-bottom:0;">Password</label>
+                </div>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-secondary);">
+                    <input type="checkbox" name="remember" value="true">
+                    <span>Remember me</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Quick Demo Credentials Fill -->
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center;">
+            <button type="button" class="btn btn-outline btn-sm" style="width: 100%; border-style: dashed;" onclick="fillDemoCredentials()">
+                ⚡ Auto-fill Demo Account (demo@example.com)
+            </button>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">
+                Password: <code>Password123!</code>
+            </p>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-secondary);">
+            Don't have an account? 
+            <a href="{{ url_for('auth.register') }}" style="color: var(--primary); font-weight: 600;">Create one here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillDemoCredentials() {
+    document.getElementById('login').value = 'demo@example.com';
+    document.getElementById('password').value = 'Password123!';
+    showToast('Demo credentials entered! Click Sign In to explore.', 'info');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Management - ExpenseVault{% endblock %}
+{% block page_title %}Budget Control{% endblock %}
+
+{% block content %}
+<!-- Toolbar -->
+<div class="filter-toolbar">
+    <div class="filter-group">
+        <label for="budgetMonthPicker" style="font-weight:600;color:var(--text-secondary);">Target Month:</label>
+        <input type="month" class="form-control" id="budgetMonthPicker" style="width: auto;">
+    </div>
+
+    <div style="display:flex;gap:0.75rem;">
+        <button class="btn btn-outline" onclick="openModal('customCategoryModal')">
+            + New Category
+        </button>
+        <button class="btn btn-primary" onclick="openSetBudgetModal()">
+            + Set Budget Limit
+        </button>
+    </div>
+</div>
+
+<!-- Overall Budget Card Container -->
+<div id="overallBudgetContainer" style="margin-bottom: 2rem;">
+    <div class="card" style="text-align:center;padding:2rem;">
+        <p style="color:var(--text-muted);">Loading monthly budget metrics...</p>
+    </div>
+</div>
+
+<!-- Category Budgets Section -->
+<div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Category Spending Caps</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Keep category expenditures within healthy boundaries. Visual warnings appear at 80% and 100% capacity.
+        </p>
+    </div>
+</div>
+
+<div class="budget-grid" id="categoryBudgetsGrid">
+    <!-- Populated by static/js/budgets.js -->
+</div>
+
+<!-- SET BUDGET MODAL -->
+<div class="modal-backdrop" id="setBudgetModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title">Configure Spending Limit</h3>
+            <button class="modal-close" onclick="closeModal('setBudgetModal')">&times;</button>
+        </div>
+        <form id="budgetForm">
+            <div class="form-group">
+                <label class="form-label" for="budgetMonthInput">Budget Month (YYYY-MM) *</label>
+                <input type="month" class="form-control" id="budgetMonthInput" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="budgetCategorySelect">Budget Target *</label>
+                <select class="form-control" id="budgetCategorySelect">
+                    <option value="">Total Monthly Limit (Overall)</option>
+                    <optgroup label="Expense Categories">
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+                <small style="color:var(--text-muted);font-size:0.8rem;margin-top:0.25rem;display:block;">
+                    Select 'Total Monthly Limit' for overall ceiling, or choose a specific category.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="budgetAmountInput">Limit Amount ({{ currency_symbol }}) *</label>
+                <input type="number" step="0.01" min="1" class="form-control" id="budgetAmountInput" required placeholder="500.00">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('setBudgetModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Budget Limit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CREATE CUSTOM CATEGORY MODAL -->
+<div class="modal-backdrop" id="customCategoryModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title">Create Custom Category</h3>
+            <button class="modal-close" onclick="closeModal('customCategoryModal')">&times;</button>
+        </div>
+        <form id="customCategoryForm">
+            <div class="form-group">
+                <label class="form-label" for="catName">Category Name *</label>
+                <input type="text" class="form-control" id="catName" required placeholder="e.g. Subscriptions, Pet Care, Fitness">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="catType">Type *</label>
+                    <select class="form-control" id="catType">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="catColor">Tag Color</label>
+                    <input type="color" class="form-control" id="catColor" value="#6366f1" style="height:44px;padding:4px;cursor:pointer;">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('customCategoryModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/budgets.js') }}"></script>
+<script>
+// Custom category form listener
+document.getElementById('customCategoryForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('catName').value;
+    const type = document.getElementById('catType').value;
+    const color = document.getElementById('catColor').value;
+
+    try {
+        await apiRequest('/api/categories', {
+            method: 'POST',
+            body: JSON.stringify({ name, type, color })
+        });
+        showToast(`Category "${name}" created successfully!`, 'success');
+        closeModal('customCategoryModal');
+        setTimeout(() => window.location.reload(), 600);
+    } catch (err) {
+        // Handled
+    }
+});
+</script>
+{% endblock %}

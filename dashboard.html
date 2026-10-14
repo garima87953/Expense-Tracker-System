@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ExpenseVault{% endblock %}
+{% block page_title %}Financial Dashboard{% endblock %}
+
+{% block content %}
+<!-- Interactive Mascot Companion Widget -->
+<div class="mascot-companion-card">
+    <div class="mascot-avatar" id="mascotAvatar" onclick="interactWithMascot()" title="Click me for a cute financial fortune! 🌸">
+        🐷
+    </div>
+    <div class="mascot-bubble">
+        <div class="mascot-title">
+            <span>✨</span> Penny the Piggy &bull; Financial Companion
+        </div>
+        <div class="mascot-message" id="mascotBubbleMsg">
+            Yay, welcome back! Your financial dashboard is looking super cute! Tap me anytime for a daily financial fortune or savings cheer! 🌸💖
+        </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="interactWithMascot()" style="white-space:nowrap;">
+        Ask Penny 🥠
+    </button>
+</div>
+
+<!-- Quick Snack & Daily Treat Presets Bar -->
+<div class="quick-presets-bar">
+    <span style="font-size:0.85rem;font-weight:700;color:var(--text-muted);margin-right:0.25rem;">⚡ Quick Log:</span>
+    <button type="button" class="preset-chip" onclick="quickAddPreset(5.50, 1, 'Artisan Morning Coffee ☕')">☕ Coffee $5.50</button>
+    <button type="button" class="preset-chip" onclick="quickAddPreset(6.75, 1, 'Brown Sugar Boba 🧋')">🧋 Boba $6.75</button>
+    <button type="button" class="preset-chip" onclick="quickAddPreset(14.50, 1, 'Delicious Bento Lunch 🍱')">🍱 Bento $14.50</button>
+    <button type="button" class="preset-chip" onclick="quickAddPreset(3.00, 3, 'Metro Transit Ride 🚇')">🚇 Transit $3.00</button>
+    <button type="button" class="preset-chip" onclick="quickAddPreset(8.00, 1, 'Strawberry Bakery Treat 🍓')">🍰 Sweet Treat $8.00</button>
+</div>
+
+<!-- AI Financial Intelligence Summary Banner -->
+<div class="ai-banner" id="aiQuickSummary">
+    <div style="display:flex;align-items:center;gap:1rem;">
+        <span style="font-size:1.5rem;">🤖</span>
+        <span style="color:var(--text-secondary);font-size:0.95rem;">Analyzing spending patterns and cash flow trends...</span>
+    </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="stat-grid">
+    <div class="stat-card income">
+        <div class="stat-icon income">💰</div>
+        <div class="stat-details">
+            <span class="stat-label">Total Income</span>
+            <span class="stat-value" id="kpiIncome">...</span>
+        </div>
+    </div>
+
+    <div class="stat-card expense">
+        <div class="stat-icon expense">💳</div>
+        <div class="stat-details">
+            <span class="stat-label">Total Expenses</span>
+            <span class="stat-value" id="kpiExpenses">...</span>
+        </div>
+    </div>
+
+    <div class="stat-card balance">
+        <div class="stat-icon balance">⚖️</div>
+        <div class="stat-details">
+            <span class="stat-label">Net Balance</span>
+            <span class="stat-value" id="kpiBalance">...</span>
+        </div>
+    </div>
+
+    <div class="stat-card count">
+        <div class="stat-icon count">📅</div>
+        <div class="stat-details">
+            <span class="stat-label">This Month Spent</span>
+            <span class="stat-value" id="kpiMonthlyExpense">...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Budget Meter Widget -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+            <h3 style="font-size: 1.15rem; font-weight: 700;">Monthly Budget Utilization</h3>
+            <span id="dashboardBudgetStatus" style="font-size: 0.85rem; color: var(--text-secondary);">Calculating current monthly limit...</span>
+        </div>
+        <div>
+            <span class="badge badge-info" id="dashboardBudgetPct">0% used</span>
+        </div>
+    </div>
+    <div class="progress-container" style="height: 12px;">
+        <div class="progress-bar progress-safe" id="dashboardBudgetBar" style="width: 0%;"></div>
+    </div>
+</div>
+
+<!-- Interactive Charts Grid -->
+<div class="charts-grid">
+    <!-- Trend Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>📊</span> Cash Flow Trend (Last 6 Months)</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Category Doughnut Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><span>🥧</span> Spending by Category</h3>
+        </div>
+        <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Feed -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><span>⏱️</span> Recent Transactions</h3>
+        <div>
+            <span id="kpiTxCount" class="badge badge-info" style="margin-right:0.5rem;">0</span>
+            <a href="{{ url_for('expenses.view_expenses') }}" class="btn btn-outline btn-sm">View All &rarr;</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title & Date</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Payment Method</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="recentTransactionsBody">
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">
+                        Loading real-time financial data...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
